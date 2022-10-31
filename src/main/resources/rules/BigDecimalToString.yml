@@ -1,0 +1,35 @@
+# With Java 1.5 (JSR 13), behaviour of the toString method is changed for BigDecimal.
+# The method changed to return result in scientific notation. Needed to use toPlainString() instead for old format.
+# These rules try to find where toString() method is used.
+
+---
+name: "BigDecimal explicit toString"
+description: "find code that explicitly call BigDecimal toString"
+condition: "resolvedMethodRef.getPackageName().toString().equals(\"java.math\") &&
+  resolvedMethodRef.getClassName().toString().equals(\"BigDecimal\") &&
+  node.getName().toString() == \"toString\""
+actions:
+  - "System.out.print(\"Cautions! Explicitly calling BigDecimal toString() in \" + file.toString());
+    if (node.getRange().isPresent()) {
+      System.out.println(\" at \" + node.getRange().get().toString());
+    }"
+---
+name: "BigDecimal concat with String right"
+description: "find code that implicitly call toString when concat with a String"
+condition: "resolvedType.describe().equals(\"java.lang.String\") &&
+  (right.resolve().getType().describe().equals(\"java.math.BigDecimal\"))"
+actions:
+  - "System.out.print(\"Cautions! Implicitly calling BigDecimal toString() by concat with String in \" + file.toString());
+    if (node.getRange().isPresent()) {
+      System.out.println(\" at \" + node.getRange().get().toString());
+    }"
+---
+name: "BigDecimal concat with String left"
+description: "find code that implicitly call toString when concat with a String"
+condition: "resolvedType.describe().equals(\"java.lang.String\") &&
+  (left.resolve().getType().describe().equals(\"java.math.BigDecimal\"))"
+actions:
+  - "System.out.print(\"Cautions! Implicitly calling BigDecimal toString() by concat with String in \" + file.toString());
+    if (node.getRange().isPresent()) {
+      System.out.println(\" at \" + node.getRange().get().toString());
+    }"
